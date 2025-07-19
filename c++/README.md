@@ -1,11 +1,11 @@
 ## Compile
 
-'''bash
+```bash
 g++ expensetracker.cpp -o expensetracker
-'''
+```
 
 ## Run
 
-'''bash
+```bash
 ./expensetracker
-'''
+```
