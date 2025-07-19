@@ -1,11 +1,62 @@
 {
-  "aff3d3fd": {
-    "id": "aff3d3fd",
-    "amount": 500.0,
-    "category": "utilities",
-    "description": "Mydescription",
+  "465e2c59": {
+    "id": "465e2c59",
+    "amount": 5000.0,
+    "category": "food",
+    "description": "testtt",
+    "user": "Bishal Thapa",
     "date": "2025-07-19",
     "timestamp": "2025-07-19T00:00:00",
-    "created_at": "2025-07-19T10:12:27.433186"
+    "created_at": "2025-07-19T10:51:32.222070"
+  },
+  "02d7bf79": {
+    "id": "02d7bf79",
+    "amount": 320.35,
+    "category": "transport",
+    "description": "asdf",
+    "user": "Bishal Thapa",
+    "date": "2025-07-19",
+    "timestamp": "2025-07-19T00:00:00",
+    "created_at": "2025-07-19T10:55:53.134832"
+  },
+  "f9263aa4": {
+    "id": "f9263aa4",
+    "amount": 123.34,
+    "category": "food",
+    "description": "description",
+    "user": "Bishal Thapa",
+    "date": "2025-07-11",
+    "timestamp": "2025-07-11T00:00:00",
+    "created_at": "2025-07-19T10:56:12.365620"
+  },
+  "fd367e21": {
+    "id": "fd367e21",
+    "amount": 900.0,
+    "category": "food",
+    "description": "description 2",
+    "user": "Bishal Thapa",
+    "date": "2025-07-19",
+    "timestamp": "2025-07-19T00:00:00",
+    "created_at": "2025-07-19T11:05:12.873436"
+  },
+  "465e2c58": {
+    "id": "465e2c58",
+    "amount": 5010.0,
+    "category": "food",
+    "description": "testtt",
+    "user": "Bishal Thapa loaded",
+    "date": "2025-07-19",
+    "timestamp": "2025-07-19T00:00:00",
+    "created_at": "2025-07-19T10:51:32.222070"
+  },
+  "465e2c60": {
+    "id": "465e2c60",
+    "amount": 5010.0,
+    "category": "food",
+    "description": "testtt",
+    "user": "Bishal Thapa loaded",
+    "date": "2025-07-19",
+    "timestamp": "2025-07-19T00:00:00",
+    "created_at": "2025-07-19T10:51:32.222070"
   }
 }

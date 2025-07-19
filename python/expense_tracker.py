@@ -34,10 +34,19 @@ class ExpenseTracker:
             "education": "Education",
             "other": "Other"
         }
+        # User options for expense tracking
+        self.users = [
+            "Bishal Thapa",
+            "Aryan Shrestha", 
+            "Mahesh Gaire",
+            "Sajjad-IT-35",
+            "SandeRestha",
+            "Tushar Limbachiya"
+        ]
         self.load_data()
     
     def add_expense(self, amountIn: Union[int, float], category: str,
-                    description: str, date: Optional[str] = None) -> str:
+                    description: str, user: str, date: Optional[str] = None) -> str:
         """
         Add a new expense to the tracker.
         Demonstrates Python's dynamic typing with Union types and optional parameters.
@@ -46,6 +55,7 @@ class ExpenseTracker:
             amountIn: Expense amount (int or float)
             category: Expense category
             description: Expense description
+            user: User who made the expense
             date: Optional date string (YYYY-MM-DD), defaults to today
             
         Returns:
@@ -68,6 +78,11 @@ class ExpenseTracker:
             available_categories = ", ".join(self.categories.keys())
             raise ValueError(f"Category must be one of: {available_categories}")
         
+        # Validate user
+        if user not in self.users:
+            available_users = ", ".join(self.users)
+            raise ValueError(f"User must be one of: {available_users}")
+        
         # Validate amount - demonstrate dynamic typing
         if isinstance(amountIn, (int, float)) and amountIn > 0:
             expense_amount = float(amountIn)
@@ -80,6 +95,7 @@ class ExpenseTracker:
             "amount": expense_amount,
             "category": category,
             "description": description.strip(),
+            "user": user,
             "date": expense_date.strftime("%Y-%m-%d"),
             "timestamp": expense_date.isoformat(),
             "created_at": datetime.now().isoformat()
@@ -303,7 +319,7 @@ class ExpenseTracker:
             with open(self.data_file, 'w') as f:
                 json.dump(self.expenses, f, indent=2, default=str)
         except Exception as e:
-            print(f"Warning: Could not save data - {e}")
+            raise Exception(f"Could not save data to {self.data_file}: {e}")
     
     def load_data(self) -> None:
         """
@@ -315,10 +331,71 @@ class ExpenseTracker:
                 with open(self.data_file, 'r') as f:
                     self.expenses = json.load(f)
             except Exception as e:
-                print(f"Warning: Could not load data - {e}")
-                self.expenses = {}
+                raise Exception(f"Could not load data from {self.data_file}: {e}")
         else:
+            # File doesn't exist, start with empty expenses
             self.expenses = {}
+    
+    def _generate_unique_id(self) -> str:
+        """Generate a unique ID that doesn't conflict with existing expenses."""
+        import uuid
+        while True:
+            new_id = str(uuid.uuid4())[:8]
+            if new_id not in self.expenses:
+                return new_id
+    
+    def load_and_merge_data(self, filename: str) -> int:
+        """
+        Load expenses from a JSON file and merge with existing expenses.
+        Returns the number of new expenses added.
+        
+        Args:
+            filename: Path to the JSON file to load
+            
+        Returns:
+            Number of new expenses that were merged
+        """
+        if not os.path.exists(filename):
+            raise Exception(f"File {filename} does not exist")
+        
+        try:
+            with open(filename, 'r') as f:
+                file_data = json.load(f)
+            
+            # Handle different JSON formats
+            if isinstance(file_data, dict):
+                if 'expenses' in file_data:
+                    # Export format with metadata
+                    loaded_expenses = file_data['expenses']
+                else:
+                    # Direct expenses dictionary
+                    loaded_expenses = file_data
+            else:
+                raise Exception("Invalid file format: expected JSON object")
+            
+            # Merge expenses, handling ID conflicts
+            new_count = 0
+            
+            for expense_id, expense_data in loaded_expenses.items():
+                if expense_id not in self.expenses:
+                    # ID doesn't exist, add directly
+                    self.expenses[expense_id] = expense_data
+                    new_count += 1
+                else:
+                    # ID conflict, generate new unique ID
+                    new_id = self._generate_unique_id()
+                    expense_data['id'] = new_id  # Update the ID in the data
+                    self.expenses[new_id] = expense_data
+                    new_count += 1
+            
+            # Auto-save the merged data
+            self.save_data()
+            return new_count
+            
+        except json.JSONDecodeError as e:
+            raise Exception(f"Invalid JSON file: {e}")
+        except Exception as e:
+            raise Exception(f"Could not load and merge data from {filename}: {e}")
 
 def format_currency(amount: float) -> str:
     """Utility function to format currency."""
@@ -334,6 +411,7 @@ def format_expense_display(expense: Dict) -> str:
         f"Date: {expense['date']} | "
         f"Amount: {format_currency(expense['amount'])} | "
         f"Category: {expense['category'].title()} | "
+        f"User: {expense.get('user', 'N/A')} | "
         f"Description: {expense['description']}"
     )
 
@@ -346,18 +424,19 @@ def display_expenses_table(expenses: List[Dict]) -> None:
         print("No expenses found.")
         return
     
-    print(f"\n{'='*100}")
-    print(f"{'ID':<10} {'Date':<12} {'Amount':<12} {'Category':<15} {'Description':<45}")
-    print(f"{'='*100}")
+    print(f"\n{'='*130}")
+    print(f"{'ID':<10} {'Date':<12} {'Amount':<12} {'Category':<15} {'User':<20} {'Description':<35}")
+    print(f"{'='*130}")
     
     for expense in expenses:
         print(f"{expense['id']:<10} "
               f"{expense['date']:<12} "
               f"{format_currency(expense['amount']):<12} "
               f"{expense['category'].title():<15} "
-              f"{expense['description'][:43]:<45}")
+              f"{expense.get('user', 'N/A'):<20} "
+              f"{expense['description'][:33]:<35}")
     
-    print(f"{'='*100}")
+    print(f"{'='*130}")
     total = sum(expense['amount'] for expense in expenses)
     print(f"Total: {format_currency(total)} ({len(expenses)} expenses)")
 
@@ -407,15 +486,31 @@ def main():
                 
                 category = input("\nEnter category: ").strip().lower()
                 description = input("Enter description: ").strip()
-                date_input = input("Enter date (YYYY-MM-DD) or press Enter for today: ").strip()
                 
+                print("\nAvailable users:")
+                for i, user in enumerate(tracker.users, 1):
+                    print(f"  {i}. {user}")
+                
+                user_input = input("\nEnter user number or name: ").strip()
+                # Handle numeric input
+                try:
+                    user_index = int(user_input) - 1
+                    if 0 <= user_index < len(tracker.users):
+                        user = tracker.users[user_index]
+                    else:
+                        raise ValueError("Invalid user number")
+                except ValueError:
+                    # Try to match by name
+                    user = user_input
+                
+                date_input = input("Enter date (YYYY-MM-DD) or press Enter for today: ").strip()
                 date_value = date_input if date_input else None
                 
                 try:
-                    expense_id = tracker.add_expense(amount, category, description, date_value)
-                    print(f"✅ Expense added successfully! ID: {expense_id}")
+                    expense_id = tracker.add_expense(amount, category, description, user, date_value)
+                    print(f"Expense added successfully! ID: {expense_id}")
                 except ValueError as e:
-                    print(f"❌ Error: {e}")
+                    print(f"Error: {e}")
             
             elif choice == '2':
                 # View all expenses
@@ -434,7 +529,7 @@ def main():
                     print(f"\nExpenses from {start_date} to {end_date}:")
                     display_expenses_table(expenses)
                 except ValueError as e:
-                    print(f"❌ Error: {e}")
+                    print(f"Error: {e}")
             
             elif choice == '4':
                 # Filter by category
@@ -450,7 +545,7 @@ def main():
                     print(f"\nExpenses in category '{category}':")
                     display_expenses_table(expenses)
                 except ValueError as e:
-                    print(f"❌ Error: {e}")
+                    print(f"Error: {e}")
             
             elif choice == '5':
                 # Search by description
@@ -505,7 +600,7 @@ def main():
                             print(f"  {category_name}: {format_currency(amount)}")
                     
                 except ValueError as e:
-                    print(f"❌ Error: {e}")
+                    print(f"Error: {e}")
             
             elif choice == '8':
                 # Delete expense
@@ -513,9 +608,9 @@ def main():
                 expense_id = input("Enter expense ID to delete: ").strip()
                 
                 if tracker.delete_expense(expense_id):
-                    print("✅ Expense deleted successfully!")
+                    print("Expense deleted successfully!")
                 else:
-                    print("❌ Expense not found.")
+                    print("Expense not found.")
             
             elif choice == '9':
                 print("Thank you for using the Expense Tracker! 👋")
@@ -528,7 +623,7 @@ def main():
             print("\n\nGoodbye! 👋")
             break
         except Exception as e:
-            print(f"❌ An unexpected error occurred: {e}")
+            print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     main() 

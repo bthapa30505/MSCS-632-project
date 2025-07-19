@@ -1,15 +1,224 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
+from tkinter import ttk, messagebox
 from tkinter.ttk import Notebook, Frame, Label, Entry, Button, Combobox, Treeview
 from datetime import datetime, timedelta
 import json
-import os
 from expense_tracker import ExpenseTracker, format_currency
 
 # Optional imports - will be handled in try/except blocks
-DateEntry = None
 plt = None
 FigureCanvasTkAgg = None
+
+class DateEntryWidget:
+    """Custom date entry widget using standard tkinter components."""
+    
+    def __init__(self, parent, **kwargs):
+        self.parent = parent
+        self.date_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d"))
+        
+        # Create frame to hold date components
+        self.frame = Frame(parent)
+        
+        # Extract width from kwargs to avoid conflict, default to 12
+        width = kwargs.pop('width', 12)
+        
+        # Create entry with validation
+        self.entry = ttk.Entry(self.frame, textvariable=self.date_var, width=width, **kwargs)
+        self.entry.pack(side='left', fill='x', expand=True)
+        
+        # Add calendar button
+        self.calendar_btn = ttk.Button(self.frame, text="...", width=3, command=self.show_calendar)
+        self.calendar_btn.pack(side='right', padx=(2, 0))
+        
+        # Bind validation
+        self.entry.bind('<FocusOut>', self.validate_date)
+        self.entry.bind('<KeyRelease>', self.on_key_release)
+    
+    def get_date(self):
+        """Get the date value as a datetime object."""
+        try:
+            return datetime.strptime(self.date_var.get(), "%Y-%m-%d")
+        except:
+            return datetime.now()
+    
+    def get(self):
+        """Get the date as a string."""
+        return self.date_var.get()
+    
+    def set_date(self, date):
+        """Set the date value."""
+        if isinstance(date, datetime):
+            self.date_var.set(date.strftime("%Y-%m-%d"))
+        elif isinstance(date, str):
+            self.date_var.set(date)
+        else:
+            self.date_var.set(str(date))
+    
+    def grid(self, **kwargs):
+        """Grid the widget frame."""
+        self.frame.grid(**kwargs)
+    
+    def pack(self, **kwargs):
+        """Pack the widget frame."""
+        self.frame.pack(**kwargs)
+    
+    def validate_date(self, event=None):
+        """Validate the entered date."""
+        try:
+            date_str = self.date_var.get()
+            if date_str:
+                datetime.strptime(date_str, "%Y-%m-%d")
+                self.entry.configure(style="")  # Remove error styling
+        except ValueError:
+            # Try to auto-correct common formats
+            self.auto_correct_date()
+    
+    def auto_correct_date(self):
+        """Try to auto-correct common date formats."""
+        date_str = self.date_var.get().replace("/", "-").replace(".", "-")
+        
+        # Try different formats
+        formats = ["%Y-%m-%d", "%m-%d-%Y", "%d-%m-%Y", "%Y%m%d"]
+        for fmt in formats:
+            try:
+                date_obj = datetime.strptime(date_str, fmt)
+                self.date_var.set(date_obj.strftime("%Y-%m-%d"))
+                self.entry.configure(style="")
+                return
+            except ValueError:
+                continue
+        
+        # If all fails, set to today
+        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
+    
+    def on_key_release(self, event=None):
+        """Handle key release for real-time formatting."""
+        current = self.date_var.get()
+        # Auto-add dashes
+        if len(current) == 4 and current.isdigit():
+            self.date_var.set(current + "-")
+        elif len(current) == 7 and current[4] == "-" and current[5:].isdigit():
+            self.date_var.set(current + "-")
+    
+    def show_calendar(self):
+        """Show a simple calendar popup."""
+        self.create_calendar_popup()
+    
+    def create_calendar_popup(self):
+        """Create a simple calendar popup using standard tkinter."""
+        popup = tk.Toplevel(self.parent)
+        popup.title("Select Date")
+        popup.geometry("300x250")
+        popup.resizable(False, False)
+        popup.configure(bg='white')
+        
+        # Center the popup
+        popup.transient(self.parent.winfo_toplevel())
+        popup.grab_set()
+        
+        # Get current date
+        try:
+            current_date = datetime.strptime(self.date_var.get(), "%Y-%m-%d")
+        except:
+            current_date = datetime.now()
+        
+        # Create calendar frame
+        cal_frame = tk.Frame(popup, bg='white')
+        cal_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Month/Year navigation
+        nav_frame = tk.Frame(cal_frame, bg='white')
+        nav_frame.pack(fill='x', pady=(0, 10))
+        
+        self.cal_month = current_date.month
+        self.cal_year = current_date.year
+        
+        ttk.Button(nav_frame, text="<", width=3, 
+                  command=lambda: self.prev_month(popup, cal_frame, nav_frame)).pack(side='left')
+        
+        self.month_label = ttk.Label(nav_frame, 
+                                   text=f"{current_date.strftime('%B %Y')}", 
+                                   font=('Helvetica', 18, 'bold'))
+        self.month_label.pack(side='left', expand=True)
+        
+        ttk.Button(nav_frame, text=">", width=3,
+                  command=lambda: self.next_month(popup, cal_frame, nav_frame)).pack(side='right')
+        
+        # Create calendar grid
+        self.create_calendar_grid(popup, cal_frame)
+    
+    def create_calendar_grid(self, popup, cal_frame):
+        """Create the calendar day grid."""
+        # Clear existing calendar if any
+        for widget in cal_frame.winfo_children():
+            if isinstance(widget, Frame) and widget != cal_frame.winfo_children()[0]:
+                widget.destroy()
+        
+        # Days grid
+        days_frame = tk.Frame(cal_frame, bg='white')
+        days_frame.pack(fill='both', expand=True)
+        
+        # Day headers
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        for i, day in enumerate(days):
+            ttk.Label(days_frame, text=day, font=('Helvetica', 14, 'bold')).grid(
+                row=0, column=i, padx=2, pady=2, sticky='nsew')
+        
+        # Get first day of month and days in month
+        first_day = datetime(self.cal_year, self.cal_month, 1)
+        if self.cal_month == 12:
+            last_day = datetime(self.cal_year + 1, 1, 1) - timedelta(days=1)
+        else:
+            last_day = datetime(self.cal_year, self.cal_month + 1, 1) - timedelta(days=1)
+        
+        # Calculate starting position (Monday = 0)
+        start_pos = first_day.weekday()
+        
+        # Fill calendar
+        row = 1
+        col = start_pos
+        
+        for day in range(1, last_day.day + 1):
+            btn = ttk.Button(days_frame, text=str(day), width=4,
+                           command=lambda d=day: self.select_date(popup, d))
+            btn.grid(row=row, column=col, padx=1, pady=1, sticky='nsew')
+            
+            col += 1
+            if col > 6:  # Sunday
+                col = 0
+                row += 1
+        
+        # Configure grid weights
+        for i in range(7):
+            days_frame.columnconfigure(i, weight=1)
+    
+    def prev_month(self, popup, cal_frame, nav_frame):
+        """Navigate to previous month."""
+        if self.cal_month == 1:
+            self.cal_month = 12
+            self.cal_year -= 1
+        else:
+            self.cal_month -= 1
+        
+        self.month_label.configure(text=datetime(self.cal_year, self.cal_month, 1).strftime('%B %Y'))
+        self.create_calendar_grid(popup, cal_frame)
+    
+    def next_month(self, popup, cal_frame, nav_frame):
+        """Navigate to next month."""
+        if self.cal_month == 12:
+            self.cal_month = 1
+            self.cal_year += 1
+        else:
+            self.cal_month += 1
+        
+        self.month_label.configure(text=datetime(self.cal_year, self.cal_month, 1).strftime('%B %Y'))
+        self.create_calendar_grid(popup, cal_frame)
+    
+    def select_date(self, popup, day):
+        """Select a date from the calendar."""
+        selected_date = datetime(self.cal_year, self.cal_month, day)
+        self.date_var.set(selected_date.strftime("%Y-%m-%d"))
+        popup.destroy()
 
 class ExpenseTrackerGUI:
     """
@@ -20,12 +229,16 @@ class ExpenseTrackerGUI:
     def __init__(self):
         """Initialize the GUI application."""
         self.root = tk.Tk()
-        self.root.title("💰 Expense Tracker - Python GUI Demo")
+        self.root.title("Expense Tracker - Python GUI Demo")
         self.root.geometry("1200x800")
         self.root.configure(bg='#f0f0f0')
         
         # Initialize the expense tracker backend
         self.tracker = ExpenseTracker()
+        
+        # Create category mappings for UI display
+        self.category_display_to_key = {name: key for key, name in self.tracker.categories.items()}
+        self.category_key_to_display = {key: name for key, name in self.tracker.categories.items()}
         
         # Configure modern styling
         self.setup_styles()
@@ -45,18 +258,18 @@ class ExpenseTrackerGUI:
         style.theme_use('clam')
         
         # Custom styles for different components
-        style.configure('Title.TLabel', font=('Helvetica', 16, 'bold'), foreground='#2c3e50')
-        style.configure('Heading.TLabel', font=('Helvetica', 12, 'bold'), foreground='#34495e')
-        style.configure('Success.TLabel', foreground='#27ae60', font=('Helvetica', 10, 'bold'))
-        style.configure('Error.TLabel', foreground='#e74c3c', font=('Helvetica', 10, 'bold'))
+        style.configure('Title.TLabel', font=('Helvetica', 24, 'bold'), foreground='#2c3e50')
+        style.configure('Heading.TLabel', font=('Helvetica', 18, 'bold'), foreground='#34495e')
+        style.configure('Success.TLabel', foreground='#27ae60', font=('Helvetica', 15, 'bold'))
+        style.configure('Error.TLabel', foreground='#e74c3c', font=('Helvetica', 15, 'bold'))
         
         # Button styles
-        style.configure('Action.TButton', font=('Helvetica', 10, 'bold'))
-        style.configure('Primary.TButton', font=('Helvetica', 11, 'bold'))
+        style.configure('Action.TButton', font=('Helvetica', 15, 'bold'))
+        style.configure('Primary.TButton', font=('Helvetica', 16, 'bold'))
         
         # Treeview styling
-        style.configure('Treeview.Heading', font=('Helvetica', 10, 'bold'))
-        style.configure('Treeview', font=('Helvetica', 9))
+        style.configure('Treeview.Heading', font=('Helvetica', 15, 'bold'))
+        style.configure('Treeview', font=('Helvetica', 14))
     
     def create_widgets(self):
         """Create all GUI widgets with modern layout."""
@@ -72,7 +285,7 @@ class ExpenseTrackerGUI:
     def create_main_tab(self):
         """Create the main tab with expense management."""
         main_frame = Frame(self.notebook)
-        self.notebook.add(main_frame, text="📊 Expense Management")
+        self.notebook.add(main_frame, text="Expense Management")
         
         # Create main sections
         self.create_input_section(main_frame)
@@ -83,7 +296,7 @@ class ExpenseTrackerGUI:
     def create_input_section(self, parent):
         """Create the expense input section."""
         # Input frame with modern styling
-        input_frame = ttk.LabelFrame(parent, text="💸 Add New Expense", padding=15)
+        input_frame = ttk.LabelFrame(parent, text="Add New Expense", padding=15)
         input_frame.pack(fill='x', padx=10, pady=(10, 5))
         
         # Create input grid
@@ -91,46 +304,50 @@ class ExpenseTrackerGUI:
         input_grid.pack(fill='x')
         
         # Amount input
-        ttk.Label(input_grid, text="Amount ($):", font=('Helvetica', 10, 'bold')).grid(
+        ttk.Label(input_grid, text="Amount ($):", font=('Helvetica', 15, 'bold')).grid(
             row=0, column=0, sticky='w', padx=(0, 10), pady=5)
         self.amount_var = tk.StringVar()
-        amount_entry = ttk.Entry(input_grid, textvariable=self.amount_var, font=('Helvetica', 10))
+        amount_entry = ttk.Entry(input_grid, textvariable=self.amount_var, font=('Helvetica', 15))
         amount_entry.grid(row=0, column=1, sticky='ew', padx=(0, 20), pady=5)
         
         # Category dropdown
-        ttk.Label(input_grid, text="Category:", font=('Helvetica', 10, 'bold')).grid(
+        ttk.Label(input_grid, text="Category:", font=('Helvetica', 15, 'bold')).grid(
             row=0, column=2, sticky='w', padx=(0, 10), pady=5)
         self.category_var = tk.StringVar()
         category_combo = ttk.Combobox(
             input_grid, textvariable=self.category_var, 
-            values=list(self.tracker.categories.keys()),
-            state='readonly', font=('Helvetica', 10)
+            values=list(self.tracker.categories.values()),
+            state='readonly', font=('Helvetica', 15)
         )
         category_combo.grid(row=0, column=3, sticky='ew', padx=(0, 20), pady=5)
-        category_combo.set('food')  # Default selection
+        category_combo.set('Food & Dining')  # Default selection
         
         # Date picker
-        ttk.Label(input_grid, text="Date:", font=('Helvetica', 10, 'bold')).grid(
+        ttk.Label(input_grid, text="Date:", font=('Helvetica', 15, 'bold')).grid(
             row=1, column=0, sticky='w', padx=(0, 10), pady=5)
-        try:
-            from tkcalendar import DateEntry
-            self.date_picker = DateEntry(
-                input_grid, width=12, background='darkblue',
-                foreground='white', borderwidth=2, font=('Helvetica', 10)
-            )
-            self.date_picker.grid(row=1, column=1, sticky='ew', padx=(0, 20), pady=5)
-        except:
-            # Fallback if tkcalendar is not available
-            self.date_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d"))
-            date_entry = ttk.Entry(input_grid, textvariable=self.date_var, font=('Helvetica', 10))
-            date_entry.grid(row=1, column=1, sticky='ew', padx=(0, 20), pady=5)
+        self.date_picker = DateEntryWidget(
+            input_grid, width=12, font=('Helvetica', 15)
+        )
+        self.date_picker.grid(row=1, column=1, sticky='ew', padx=(0, 20), pady=5)
+        
+        # User dropdown  
+        ttk.Label(input_grid, text="User:", font=('Helvetica', 15, 'bold')).grid(
+            row=1, column=2, sticky='w', padx=(0, 10), pady=5)
+        self.user_var = tk.StringVar()
+        user_combo = ttk.Combobox(
+            input_grid, textvariable=self.user_var,
+            values=self.tracker.users,
+            state='readonly', font=('Helvetica', 15)
+        )
+        user_combo.grid(row=1, column=3, sticky='ew', padx=(0, 20), pady=5)
+        user_combo.set(self.tracker.users[0])  # Default to first user
         
         # Description input
-        ttk.Label(input_grid, text="Description:", font=('Helvetica', 10, 'bold')).grid(
-            row=1, column=2, sticky='w', padx=(0, 10), pady=5)
+        ttk.Label(input_grid, text="Description:", font=('Helvetica', 15, 'bold')).grid(
+            row=2, column=0, sticky='w', padx=(0, 10), pady=5)
         self.description_var = tk.StringVar()
-        description_entry = ttk.Entry(input_grid, textvariable=self.description_var, font=('Helvetica', 10))
-        description_entry.grid(row=1, column=3, sticky='ew', pady=5)
+        description_entry = ttk.Entry(input_grid, textvariable=self.description_var, font=('Helvetica', 15))
+        description_entry.grid(row=2, column=1, columnspan=3, sticky='ew', pady=5)
         
         # Configure grid weights for responsive design
         for i in range(4):
@@ -141,13 +358,13 @@ class ExpenseTrackerGUI:
         button_frame.pack(fill='x', pady=(10, 0))
         
         add_button = ttk.Button(
-            button_frame, text="➕ Add Expense", 
+            button_frame, text="Add Expense", 
             command=self.add_expense, style='Primary.TButton'
         )
         add_button.pack(side='left', padx=(0, 10))
         
         clear_button = ttk.Button(
-            button_frame, text="🗑️ Clear Form", 
+            button_frame, text="Clear Form", 
             command=self.clear_form
         )
         clear_button.pack(side='left')
@@ -158,7 +375,7 @@ class ExpenseTrackerGUI:
     
     def create_filter_section(self, parent):
         """Create the filtering controls section."""
-        filter_frame = ttk.LabelFrame(parent, text="🔍 Filter & Search", padding=10)
+        filter_frame = ttk.LabelFrame(parent, text="Filter & Search", padding=10)
         filter_frame.pack(fill='x', padx=10, pady=5)
         
         # Filter controls
@@ -166,67 +383,69 @@ class ExpenseTrackerGUI:
         controls_frame.pack(fill='x')
         
         # Date range filter
-        ttk.Label(controls_frame, text="From:", font=('Helvetica', 9)).grid(
+        ttk.Label(controls_frame, text="From:", font=('Helvetica', 14)).grid(
             row=0, column=0, sticky='w', padx=(0, 5))
-        try:
-            from tkcalendar import DateEntry
-            self.start_date_picker = DateEntry(
-                controls_frame, width=10, font=('Helvetica', 9)
-            )
-            self.start_date_picker.grid(row=0, column=1, padx=(0, 10))
-        except:
-            self.start_date_var = tk.StringVar(value=(datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d"))
-            start_entry = ttk.Entry(controls_frame, textvariable=self.start_date_var, width=12, font=('Helvetica', 9))
-            start_entry.grid(row=0, column=1, padx=(0, 10))
+        self.start_date_picker = DateEntryWidget(
+            controls_frame, width=10, font=('Helvetica', 14)
+        )
+        self.start_date_picker.set_date(datetime.now() - timedelta(days=30))
+        self.start_date_picker.grid(row=0, column=1, padx=(0, 10))
         
-        ttk.Label(controls_frame, text="To:", font=('Helvetica', 9)).grid(
+        ttk.Label(controls_frame, text="To:", font=('Helvetica', 14)).grid(
             row=0, column=2, sticky='w', padx=(0, 5))
-        try:
-            from tkcalendar import DateEntry
-            self.end_date_picker = DateEntry(
-                controls_frame, width=10, font=('Helvetica', 9)
-            )
-            self.end_date_picker.grid(row=0, column=3, padx=(0, 15))
-        except:
-            self.end_date_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d"))
-            end_entry = ttk.Entry(controls_frame, textvariable=self.end_date_var, width=12, font=('Helvetica', 9))
-            end_entry.grid(row=0, column=3, padx=(0, 15))
+        self.end_date_picker = DateEntryWidget(
+            controls_frame, width=10, font=('Helvetica', 14)
+        )
+        self.end_date_picker.set_date(datetime.now())
+        self.end_date_picker.grid(row=0, column=3, padx=(0, 15))
         
         # Category filter
-        ttk.Label(controls_frame, text="Category:", font=('Helvetica', 9)).grid(
+        ttk.Label(controls_frame, text="Category:", font=('Helvetica', 14)).grid(
             row=0, column=4, sticky='w', padx=(0, 5))
         self.filter_category_var = tk.StringVar()
         filter_combo = ttk.Combobox(
             controls_frame, textvariable=self.filter_category_var,
-            values=['All'] + list(self.tracker.categories.keys()),
-            state='readonly', width=12, font=('Helvetica', 9)
+            values=['All'] + list(self.tracker.categories.values()),
+            state='readonly', width=12, font=('Helvetica', 14)
         )
         filter_combo.grid(row=0, column=5, padx=(0, 15))
         filter_combo.set('All')
         
-        # Search box
-        ttk.Label(controls_frame, text="Search:", font=('Helvetica', 9)).grid(
+        # User filter
+        ttk.Label(controls_frame, text="User:", font=('Helvetica', 14)).grid(
             row=0, column=6, sticky='w', padx=(0, 5))
+        self.filter_user_var = tk.StringVar()
+        user_filter_combo = ttk.Combobox(
+            controls_frame, textvariable=self.filter_user_var,
+            values=['All'] + self.tracker.users,
+            state='readonly', width=15, font=('Helvetica', 14)
+        )
+        user_filter_combo.grid(row=0, column=7, padx=(0, 15))
+        user_filter_combo.set('All')
+        
+        # Search box
+        ttk.Label(controls_frame, text="Search:", font=('Helvetica', 14)).grid(
+            row=0, column=8, sticky='w', padx=(0, 5))
         self.search_var = tk.StringVar()
-        search_entry = ttk.Entry(controls_frame, textvariable=self.search_var, width=15, font=('Helvetica', 9))
-        search_entry.grid(row=0, column=7, padx=(0, 10))
+        search_entry = ttk.Entry(controls_frame, textvariable=self.search_var, width=15, font=('Helvetica', 14))
+        search_entry.grid(row=0, column=9, padx=(0, 10))
         
         # Filter buttons
         filter_button = ttk.Button(
-            controls_frame, text="🔍 Filter", 
+            controls_frame, text="Filter", 
             command=self.apply_filters, style='Action.TButton'
         )
-        filter_button.grid(row=0, column=8, padx=5)
+        filter_button.grid(row=0, column=10, padx=5)
         
         reset_button = ttk.Button(
-            controls_frame, text="↻ Reset", 
+            controls_frame, text="Reset", 
             command=self.reset_filters
         )
-        reset_button.grid(row=0, column=9, padx=5)
+        reset_button.grid(row=0, column=11, padx=5)
     
     def create_table_section(self, parent):
         """Create the expenses table section."""
-        table_frame = ttk.LabelFrame(parent, text="📋 Expenses List", padding=10)
+        table_frame = ttk.LabelFrame(parent, text="Expenses List", padding=10)
         table_frame.pack(fill='both', expand=True, padx=10, pady=5)
         
         # Create table with scrollbars
@@ -234,7 +453,7 @@ class ExpenseTrackerGUI:
         table_container.pack(fill='both', expand=True)
         
         # Treeview for expenses
-        columns = ('ID', 'Date', 'Amount', 'Category', 'Description')
+        columns = ('ID', 'Date', 'Amount', 'Category', 'User', 'Description')
         self.expense_tree = Treeview(table_container, columns=columns, show='headings', height=15)
         
         # Define column headings and widths
@@ -242,13 +461,15 @@ class ExpenseTrackerGUI:
         self.expense_tree.heading('Date', text='Date')
         self.expense_tree.heading('Amount', text='Amount')
         self.expense_tree.heading('Category', text='Category')
+        self.expense_tree.heading('User', text='User')
         self.expense_tree.heading('Description', text='Description')
         
         self.expense_tree.column('ID', width=80, anchor='center')
         self.expense_tree.column('Date', width=100, anchor='center')
         self.expense_tree.column('Amount', width=100, anchor='center')
         self.expense_tree.column('Category', width=120, anchor='center')
-        self.expense_tree.column('Description', width=300, anchor='w')
+        self.expense_tree.column('User', width=150, anchor='center')
+        self.expense_tree.column('Description', width=250, anchor='w')
         
         # Scrollbars
         v_scrollbar = ttk.Scrollbar(table_container, orient='vertical', command=self.expense_tree.yview)
@@ -268,27 +489,27 @@ class ExpenseTrackerGUI:
         action_frame.pack(fill='x', pady=(10, 0))
         
         edit_button = ttk.Button(
-            action_frame, text="✏️ Edit Selected", 
+            action_frame, text="Edit Selected", 
             command=self.edit_selected_expense
         )
         edit_button.pack(side='left', padx=(0, 10))
         
         delete_button = ttk.Button(
-            action_frame, text="🗑️ Delete Selected", 
+            action_frame, text="Delete Selected", 
             command=self.delete_selected_expense
         )
         delete_button.pack(side='left')
         
         # Export button
         export_button = ttk.Button(
-            action_frame, text="📤 Export to JSON", 
+            action_frame, text="Export to JSON", 
             command=self.export_data
         )
         export_button.pack(side='right')
     
     def create_summary_section(self, parent):
         """Create the summary information section."""
-        summary_frame = ttk.LabelFrame(parent, text="📈 Quick Summary", padding=10)
+        summary_frame = ttk.LabelFrame(parent, text="Quick Summary", padding=10)
         summary_frame.pack(fill='x', padx=10, pady=(5, 10))
         
         # Summary labels
@@ -296,41 +517,41 @@ class ExpenseTrackerGUI:
         summary_grid.pack(fill='x')
         
         # Total expenses
-        ttk.Label(summary_grid, text="Total Expenses:", font=('Helvetica', 10, 'bold')).grid(
+        ttk.Label(summary_grid, text="Total Expenses:", font=('Helvetica', 15, 'bold')).grid(
             row=0, column=0, sticky='w', padx=(0, 20))
-        self.total_label = ttk.Label(summary_grid, text="$0.00", font=('Helvetica', 12, 'bold'), foreground='#e74c3c')
+        self.total_label = ttk.Label(summary_grid, text="$0.00", font=('Helvetica', 18, 'bold'), foreground='#e74c3c')
         self.total_label.grid(row=0, column=1, sticky='w')
         
         # Expense count
-        ttk.Label(summary_grid, text="Total Count:", font=('Helvetica', 10, 'bold')).grid(
+        ttk.Label(summary_grid, text="Total Count:", font=('Helvetica', 15, 'bold')).grid(
             row=0, column=2, sticky='w', padx=(50, 20))
-        self.count_label = ttk.Label(summary_grid, text="0", font=('Helvetica', 12, 'bold'), foreground='#3498db')
+        self.count_label = ttk.Label(summary_grid, text="0", font=('Helvetica', 18, 'bold'), foreground='#3498db')
         self.count_label.grid(row=0, column=3, sticky='w')
         
         # Average expense
-        ttk.Label(summary_grid, text="Average:", font=('Helvetica', 10, 'bold')).grid(
+        ttk.Label(summary_grid, text="Average:", font=('Helvetica', 15, 'bold')).grid(
             row=0, column=4, sticky='w', padx=(50, 20))
-        self.avg_label = ttk.Label(summary_grid, text="$0.00", font=('Helvetica', 12, 'bold'), foreground='#9b59b6')
+        self.avg_label = ttk.Label(summary_grid, text="$0.00", font=('Helvetica', 18, 'bold'), foreground='#9b59b6')
         self.avg_label.grid(row=0, column=5, sticky='w')
     
     def create_analytics_tab(self):
         """Create the analytics tab with charts and detailed summaries."""
         analytics_frame = Frame(self.notebook)
-        self.notebook.add(analytics_frame, text="📊 Analytics")
+        self.notebook.add(analytics_frame, text="Analytics")
         
         # Create chart section
-        chart_frame = ttk.LabelFrame(analytics_frame, text="📈 Expense Charts", padding=10)
+        chart_frame = ttk.LabelFrame(analytics_frame, text="Expense Charts", padding=10)
         chart_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
         # Chart controls
         control_frame = Frame(chart_frame)
         control_frame.pack(fill='x', pady=(0, 10))
         
-        ttk.Button(control_frame, text="📊 Category Pie Chart", 
+        ttk.Button(control_frame, text="Category Pie Chart", 
                   command=self.show_category_chart).pack(side='left', padx=(0, 10))
-        ttk.Button(control_frame, text="📈 Monthly Trend", 
+        ttk.Button(control_frame, text="Monthly Trend", 
                   command=self.show_trend_chart).pack(side='left', padx=(0, 10))
-        ttk.Button(control_frame, text="📋 Category Summary", 
+        ttk.Button(control_frame, text="Category Summary", 
                   command=self.show_category_summary).pack(side='left')
         
         # Chart canvas placeholder
@@ -340,8 +561,8 @@ class ExpenseTrackerGUI:
         # Initial welcome message
         welcome_label = ttk.Label(
             self.chart_frame, 
-            text="📊 Click a button above to view analytics charts",
-            font=('Helvetica', 14), 
+            text="Click a button above to view analytics charts",
+            font=('Helvetica', 21), 
             foreground='#7f8c8d'
         )
         welcome_label.pack(expand=True)
@@ -349,21 +570,19 @@ class ExpenseTrackerGUI:
     def create_settings_tab(self):
         """Create the settings and data management tab."""
         settings_frame = Frame(self.notebook)
-        self.notebook.add(settings_frame, text="⚙️ Settings")
+        self.notebook.add(settings_frame, text="Settings")
         
         # Data management section
-        data_frame = ttk.LabelFrame(settings_frame, text="💾 Data Management", padding=15)
+        data_frame = ttk.LabelFrame(settings_frame, text="Data Management", padding=15)
         data_frame.pack(fill='x', padx=10, pady=10)
         
-        ttk.Button(data_frame, text="💾 Save Data", 
-                  command=self.save_data).pack(side='left', padx=(0, 10))
-        ttk.Button(data_frame, text="📂 Load Data", 
+        ttk.Button(data_frame, text="Load Data", 
                   command=self.load_data).pack(side='left', padx=(0, 10))
-        ttk.Button(data_frame, text="🗑️ Clear All Data", 
+        ttk.Button(data_frame, text="Clear All Data", 
                   command=self.clear_all_data).pack(side='left')
         
         # Categories management
-        categories_frame = ttk.LabelFrame(settings_frame, text="🏷️ Category Management", padding=15)
+        categories_frame = ttk.LabelFrame(settings_frame, text="Category Management", padding=15)
         categories_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
         # Categories list
@@ -373,20 +592,37 @@ class ExpenseTrackerGUI:
         ttk.Label(categories_list, text="Current Categories:", 
                  style='Heading.TLabel').pack(anchor='w', pady=(0, 10))
         
-        # Display current categories
-        for key, name in self.tracker.categories.items():
-            category_row = Frame(categories_list)
-            category_row.pack(fill='x', pady=2)
-            ttk.Label(category_row, text=f"• {key}: {name}", 
-                     font=('Helvetica', 10)).pack(side='left')
+        # Display current categories with delete buttons
+        self.categories_container = Frame(categories_list)
+        self.categories_container.pack(fill='both', expand=True)
+        self.refresh_categories_display()
+        
+        # Add new category section
+        ttk.Label(categories_list, text="Add New Category:", 
+                 font=('Helvetica', 15, 'bold')).pack(anchor='w', pady=(20, 10))
+        
+        add_category_frame = Frame(categories_list)
+        add_category_frame.pack(fill='x', pady=(0, 10))
+        
+        ttk.Label(add_category_frame, text="Display Name:", font=('Helvetica', 12)).grid(
+            row=0, column=0, sticky='w', padx=(0, 10))
+        self.new_category_name_var = tk.StringVar()
+        ttk.Entry(add_category_frame, textvariable=self.new_category_name_var, 
+                 font=('Helvetica', 12), width=20).grid(row=0, column=1, sticky='ew', padx=(0, 10))
+        
+        ttk.Button(add_category_frame, text="Add Category", 
+                  command=self.add_new_category).grid(row=0, column=2)
+        
+        # Configure grid weights
+        add_category_frame.columnconfigure(1, weight=1)
     
     def create_context_menu(self):
         """Create right-click context menu for the table."""
         self.context_menu = tk.Menu(self.root, tearoff=0)
-        self.context_menu.add_command(label="✏️ Edit", command=self.edit_selected_expense)
-        self.context_menu.add_command(label="🗑️ Delete", command=self.delete_selected_expense)
+        self.context_menu.add_command(label="Edit", command=self.edit_selected_expense)
+        self.context_menu.add_command(label="Delete", command=self.delete_selected_expense)
         self.context_menu.add_separator()
-        self.context_menu.add_command(label="📋 Copy Details", command=self.copy_expense_details)
+        self.context_menu.add_command(label="Copy Details", command=self.copy_expense_details)
         
         # Bind right-click to table
         self.expense_tree.bind("<Button-3>", self.show_context_menu)
@@ -403,24 +639,26 @@ class ExpenseTrackerGUI:
         try:
             # Get values from form
             amount = float(self.amount_var.get().strip())
-            category = self.category_var.get().strip()
+            category_display = self.category_var.get().strip()
+            # Convert display name to internal key
+            category = self.category_display_to_key.get(category_display, category_display.lower())
             description = self.description_var.get().strip()
+            user = self.user_var.get().strip()
             
             # Get date
-            try:
-                date_str = self.date_picker.get_date().strftime("%Y-%m-%d")
-            except:
-                date_str = self.date_var.get().strip() if hasattr(self, 'date_var') else datetime.now().strftime("%Y-%m-%d")
+            date_str = self.date_picker.get()
             
             # Validate inputs
             if not description:
                 raise ValueError("Description cannot be empty")
+            if not user:
+                raise ValueError("Please select a user")
             
             # Add expense using backend
-            expense_id = self.tracker.add_expense(amount, category, description, date_str)
+            expense_id = self.tracker.add_expense(amount, category, description, user, date_str)
             
             # Show success message
-            self.show_status(f"✅ Expense added successfully! (ID: {expense_id})", "success")
+            self.show_status(f"Expense added successfully! (ID: {expense_id})", "success")
             
             # Clear form and refresh display
             self.clear_form()
@@ -428,20 +666,17 @@ class ExpenseTrackerGUI:
             self.update_summary()
             
         except ValueError as e:
-            self.show_status(f"❌ Error: {str(e)}", "error")
+            self.show_status(f"Error: {str(e)}", "error")
         except Exception as e:
-            self.show_status(f"❌ Unexpected error: {str(e)}", "error")
+            self.show_status(f"Unexpected error: {str(e)}", "error")
     
     def clear_form(self):
         """Clear the expense input form."""
         self.amount_var.set("")
         self.description_var.set("")
-        self.category_var.set("food")
-        try:
-            self.date_picker.set_date(datetime.now().date())
-        except:
-            if hasattr(self, 'date_var'):
-                self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
+        self.category_var.set("Food & Dining")
+        self.user_var.set(self.tracker.users[0])  # Reset to first user
+        self.date_picker.set_date(datetime.now().date())
     
     def show_status(self, message, status_type="info"):
         """Show status message with appropriate styling."""
@@ -472,6 +707,7 @@ class ExpenseTrackerGUI:
                 expense['date'],
                 format_currency(expense['amount']),
                 expense['category'].title(),
+                expense.get('user', 'N/A'),
                 expense['description']
             ))
         
@@ -493,14 +729,11 @@ class ExpenseTrackerGUI:
         """Apply filters to the expense display."""
         try:
             # Get filter values
-            try:
-                start_date = self.start_date_picker.get_date().strftime("%Y-%m-%d")
-                end_date = self.end_date_picker.get_date().strftime("%Y-%m-%d")
-            except:
-                start_date = self.start_date_var.get() if hasattr(self, 'start_date_var') else (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
-                end_date = self.end_date_var.get() if hasattr(self, 'end_date_var') else datetime.now().strftime("%Y-%m-%d")
+            start_date = self.start_date_picker.get()
+            end_date = self.end_date_picker.get()
             
             category = self.filter_category_var.get()
+            user = self.filter_user_var.get()
             search_query = self.search_var.get().strip()
             
             # Start with all expenses
@@ -513,8 +746,15 @@ class ExpenseTrackerGUI:
             
             # Apply category filter
             if category and category != 'All':
+                # Convert display name to internal key for comparison
+                category_key = self.category_display_to_key.get(category, category.lower())
                 expenses = [e for e in expenses 
-                           if e['category'] == category]
+                           if e['category'] == category_key]
+            
+            # Apply user filter
+            if user and user != 'All':
+                expenses = [e for e in expenses 
+                           if e.get('user', 'N/A') == user]
             
             # Apply search filter
             if search_query:
@@ -524,26 +764,21 @@ class ExpenseTrackerGUI:
             # Refresh table with filtered results
             self.refresh_expense_table(expenses)
             
-            self.show_status(f"🔍 Found {len(expenses)} matching expenses")
+            self.show_status(f"Found {len(expenses)} matching expenses")
             
         except Exception as e:
-            self.show_status(f"❌ Filter error: {str(e)}", "error")
+            self.show_status(f"Filter error: {str(e)}", "error")
     
     def reset_filters(self):
         """Reset all filters and show all expenses."""
         self.filter_category_var.set('All')
+        self.filter_user_var.set('All')
         self.search_var.set('')
-        try:
-            self.start_date_picker.set_date((datetime.now() - timedelta(days=30)).date())
-            self.end_date_picker.set_date(datetime.now().date())
-        except:
-            if hasattr(self, 'start_date_var'):
-                self.start_date_var.set((datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d"))
-            if hasattr(self, 'end_date_var'):
-                self.end_date_var.set(datetime.now().strftime("%Y-%m-%d"))
+        self.start_date_picker.set_date((datetime.now() - timedelta(days=30)).date())
+        self.end_date_picker.set_date(datetime.now().date())
         
         self.refresh_expense_table()
-        self.show_status("↻ Filters reset")
+        self.show_status("Filters reset")
     
     def edit_selected_expense(self):
         """Edit the selected expense."""
@@ -568,8 +803,8 @@ class ExpenseTrackerGUI:
     def create_edit_dialog(self, expense):
         """Create dialog for editing an expense."""
         dialog = tk.Toplevel(self.root)
-        dialog.title("✏️ Edit Expense")
-        dialog.geometry("400x300")
+        dialog.title("Edit Expense")
+        dialog.geometry("500x450")
         dialog.resizable(False, False)
         dialog.configure(bg='#f0f0f0')
         
@@ -582,44 +817,59 @@ class ExpenseTrackerGUI:
         main_frame.pack(fill='both', expand=True)
         
         # Amount
-        ttk.Label(main_frame, text="Amount ($):", font=('Helvetica', 10, 'bold')).pack(anchor='w', pady=(0, 5))
+        ttk.Label(main_frame, text="Amount ($):", font=('Helvetica', 15, 'bold')).pack(anchor='w', pady=(0, 5))
         amount_var = tk.StringVar(value=str(expense['amount']))
-        amount_entry = ttk.Entry(main_frame, textvariable=amount_var, font=('Helvetica', 10))
+        amount_entry = ttk.Entry(main_frame, textvariable=amount_var, font=('Helvetica', 15))
         amount_entry.pack(fill='x', pady=(0, 15))
         
         # Category
-        ttk.Label(main_frame, text="Category:", font=('Helvetica', 10, 'bold')).pack(anchor='w', pady=(0, 5))
-        category_var = tk.StringVar(value=expense['category'])
+        ttk.Label(main_frame, text="Category:", font=('Helvetica', 15, 'bold')).pack(anchor='w', pady=(0, 5))
+        category_var = tk.StringVar(value=self.category_key_to_display.get(expense['category'], expense['category'].title()))
         category_combo = ttk.Combobox(
             main_frame, textvariable=category_var,
-            values=list(self.tracker.categories.keys()),
-            state='readonly', font=('Helvetica', 10)
+            values=list(self.tracker.categories.values()),
+            state='readonly', font=('Helvetica', 15)
         )
         category_combo.pack(fill='x', pady=(0, 15))
         
+        # User
+        ttk.Label(main_frame, text="User:", font=('Helvetica', 15, 'bold')).pack(anchor='w', pady=(0, 5))
+        user_var = tk.StringVar(value=expense.get('user', self.tracker.users[0]))
+        user_combo = ttk.Combobox(
+            main_frame, textvariable=user_var,
+            values=self.tracker.users,
+            state='readonly', font=('Helvetica', 15)
+        )
+        user_combo.pack(fill='x', pady=(0, 15))
+        
         # Description
-        ttk.Label(main_frame, text="Description:", font=('Helvetica', 10, 'bold')).pack(anchor='w', pady=(0, 5))
+        ttk.Label(main_frame, text="Description:", font=('Helvetica', 15, 'bold')).pack(anchor='w', pady=(0, 5))
         description_var = tk.StringVar(value=expense['description'])
-        description_entry = ttk.Entry(main_frame, textvariable=description_var, font=('Helvetica', 10))
+        description_entry = ttk.Entry(main_frame, textvariable=description_var, font=('Helvetica', 15))
         description_entry.pack(fill='x', pady=(0, 15))
         
         # Date
-        ttk.Label(main_frame, text="Date:", font=('Helvetica', 10, 'bold')).pack(anchor='w', pady=(0, 5))
+        ttk.Label(main_frame, text="Date:", font=('Helvetica', 15, 'bold')).pack(anchor='w', pady=(0, 5))
         date_var = tk.StringVar(value=expense['date'])
-        date_entry = ttk.Entry(main_frame, textvariable=date_var, font=('Helvetica', 10))
+        date_entry = ttk.Entry(main_frame, textvariable=date_var, font=('Helvetica', 15))
         date_entry.pack(fill='x', pady=(0, 20))
         
         # Buttons
         button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill='x')
+        button_frame.pack(fill='x', pady=(20, 10))
         
         def save_changes():
             try:
                 # Update expense data
+                # Convert category display name back to key
+                category_display = category_var.get()
+                category_key = self.category_display_to_key.get(category_display, category_display.lower())
+                
                 new_expense = {
                     **expense,
                     'amount': float(amount_var.get()),
-                    'category': category_var.get(),
+                    'category': category_key,
+                    'user': user_var.get(),
                     'description': description_var.get().strip(),
                     'date': date_var.get().strip()
                 }
@@ -634,15 +884,18 @@ class ExpenseTrackerGUI:
                 
                 # Refresh display
                 self.refresh_expense_table()
-                self.show_status(f"✅ Expense {expense['id']} updated successfully", "success")
+                self.show_status(f"Expense {expense['id']} updated successfully", "success")
                 dialog.destroy()
                 
             except ValueError as e:
                 messagebox.showerror("Error", str(e))
         
-        ttk.Button(button_frame, text="💾 Save Changes", command=save_changes, 
-                  style='Primary.TButton').pack(side='left', padx=(0, 10))
-        ttk.Button(button_frame, text="❌ Cancel", command=dialog.destroy).pack(side='left')
+        save_btn = ttk.Button(button_frame, text="Save Changes", command=save_changes, 
+                  style='Primary.TButton')
+        save_btn.pack(side='left', padx=(0, 10))
+        
+        cancel_btn = ttk.Button(button_frame, text="Cancel", command=dialog.destroy)
+        cancel_btn.pack(side='left')
     
     def delete_selected_expense(self):
         """Delete the selected expense."""
@@ -663,10 +916,10 @@ class ExpenseTrackerGUI:
         
         if result:
             if self.tracker.delete_expense(expense_id):
-                self.show_status(f"🗑️ Expense {expense_id} deleted successfully", "success")
+                self.show_status(f"Expense {expense_id} deleted successfully", "success")
                 self.refresh_expense_table()
             else:
-                self.show_status(f"❌ Failed to delete expense {expense_id}", "error")
+                self.show_status(f"Failed to delete expense {expense_id}", "error")
     
     def copy_expense_details(self):
         """Copy selected expense details to clipboard."""
@@ -682,7 +935,7 @@ class ExpenseTrackerGUI:
         # Copy to clipboard
         self.root.clipboard_clear()
         self.root.clipboard_append(details)
-        self.show_status("📋 Expense details copied to clipboard")
+        self.show_status("Expense details copied to clipboard")
     
     def show_category_chart(self):
         """Show pie chart of expenses by category."""
@@ -705,7 +958,7 @@ class ExpenseTrackerGUI:
             
             if not amounts:
                 ttk.Label(self.chart_frame, text="No data to display", 
-                         font=('Helvetica', 14)).pack(expand=True)
+                         font=('Helvetica', 21)).pack(expand=True)
                 return
             
             # Create matplotlib figure
@@ -714,7 +967,7 @@ class ExpenseTrackerGUI:
             fig, ax = plt.subplots(figsize=(10, 6))
             wedges, texts, autotexts = ax.pie(amounts, labels=categories, autopct='%1.1f%%', 
                                             colors=colors[:len(categories)])
-            ax.set_title('Expenses by Category', fontsize=16, fontweight='bold')
+            ax.set_title('Expenses by Category', fontsize=24, fontweight='bold')
             
             # Embed in tkinter
             canvas = FigureCanvasTkAgg(fig, self.chart_frame)
@@ -734,7 +987,7 @@ class ExpenseTrackerGUI:
             expenses = self.tracker.view_all_expenses()
             if not expenses:
                 ttk.Label(self.chart_frame, text="No data to display", 
-                         font=('Helvetica', 14)).pack(expand=True)
+                         font=('Helvetica', 21)).pack(expand=True)
                 return
             
             # Group by month
@@ -751,7 +1004,7 @@ class ExpenseTrackerGUI:
             # Create matplotlib figure
             fig, ax = plt.subplots(figsize=(12, 6))
             ax.plot(months, amounts, marker='o', linewidth=2, markersize=8)
-            ax.set_title('Monthly Expense Trend', fontsize=16, fontweight='bold')
+            ax.set_title('Monthly Expense Trend', fontsize=24, fontweight='bold')
             ax.set_xlabel('Month')
             ax.set_ylabel('Amount ($)')
             ax.grid(True, alpha=0.3)
@@ -773,7 +1026,7 @@ class ExpenseTrackerGUI:
         
         # Create summary window
         summary_window = tk.Toplevel(self.root)
-        summary_window.title("📊 Category Summary")
+        summary_window.title("Category Summary")
         summary_window.geometry("600x400")
         summary_window.configure(bg='#f0f0f0')
         
@@ -811,20 +1064,44 @@ class ExpenseTrackerGUI:
         total_frame = ttk.Frame(frame)
         total_frame.pack(fill='x')
         ttk.Label(total_frame, text=f"Total: {format_currency(total_all)}", 
-                 font=('Helvetica', 12, 'bold')).pack(side='left')
+                 font=('Helvetica', 18, 'bold')).pack(side='left')
         ttk.Label(total_frame, text=f"Count: {sum(data['count'] for data in summary.values())}", 
-                 font=('Helvetica', 12, 'bold')).pack(side='right')
+                 font=('Helvetica', 18, 'bold')).pack(side='right')
     
-    def save_data(self):
-        """Save data to file."""
-        self.tracker.save_data()
-        self.show_status("💾 Data saved successfully", "success")
-    
+
     def load_data(self):
-        """Load data from file."""
-        self.tracker.load_data()
-        self.refresh_expense_table()
-        self.show_status("📂 Data loaded successfully", "success")
+        """Load data from file and merge with existing expenses."""
+        from tkinter import filedialog
+        
+        # Let user select a file to load
+        filename = filedialog.askopenfilename(
+            title="Select Expense Data File",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            defaultextension=".json"
+        )
+        
+        if not filename:
+            # User cancelled the dialog
+            return
+        
+        try:
+            # Load data from selected file and merge with existing
+            new_expenses_count = self.tracker.load_and_merge_data(filename)
+            self.refresh_expense_table()
+            
+            if new_expenses_count > 0:
+                self.show_status(f"Loaded and merged {new_expenses_count} expenses successfully", "success")
+                messagebox.showinfo("Success", 
+                    f"Successfully loaded and merged {new_expenses_count} expenses from {filename}\n\n"
+                    f"Total expenses: {len(self.tracker.expenses)}")
+            else:
+                self.show_status("No new expenses found to merge", "success")
+                messagebox.showinfo("Info", "No new expenses found in the selected file.")
+                
+        except Exception as e:
+            error_msg = f"Failed to load data: {str(e)}"
+            self.show_status(error_msg, "error")
+            messagebox.showerror("Load Error", error_msg)
     
     def clear_all_data(self):
         """Clear all expense data."""
@@ -837,7 +1114,166 @@ class ExpenseTrackerGUI:
             self.tracker.expenses = {}
             self.tracker.save_data()
             self.refresh_expense_table()
-            self.show_status("🗑️ All data cleared", "success")
+            self.show_status("All data cleared", "success")
+    
+    def refresh_categories_display(self):
+        """Refresh the categories display with current categories and delete buttons."""
+        # Clear existing widgets
+        for widget in self.categories_container.winfo_children():
+            widget.destroy()
+        
+        # Display current categories with delete buttons
+        for key, name in self.tracker.categories.items():
+            category_row = Frame(self.categories_container)
+            category_row.pack(fill='x', pady=2)
+            
+            ttk.Label(category_row, text=f"• {name}", 
+                     font=('Helvetica', 15)).pack(side='left')
+            
+            # Only allow deletion of non-essential categories
+            if key not in ['food', 'transport', 'utilities', 'other']:
+                delete_btn = ttk.Button(category_row, text="Delete", width=8,
+                                      command=lambda k=key: self.delete_category(k))
+                delete_btn.pack(side='right', padx=(10, 0))
+    
+    def add_new_category(self):
+        """Add a new category to the tracker."""
+        category_name = self.new_category_name_var.get().strip()
+        
+        if not category_name:
+            messagebox.showerror("Error", "Please enter a category name")
+            return
+        
+        # Generate key from display name
+        category_key = category_name.lower().replace(' ', '').replace('&', '').replace('-', '')
+        
+        # Check if category already exists
+        if category_key in self.tracker.categories:
+            messagebox.showerror("Error", "A category with this name already exists")
+            return
+        
+        # Check if display name already exists
+        if category_name in self.tracker.categories.values():
+            messagebox.showerror("Error", "A category with this display name already exists")
+            return
+        
+        try:
+            # Add to tracker
+            self.tracker.categories[category_key] = category_name
+            
+            # Update category mappings
+            self.update_category_mappings()
+            
+            # Update all dropdowns
+            self.update_category_dropdowns()
+            
+            # Save changes
+            self.tracker.save_data()
+            
+            # Refresh display
+            self.refresh_categories_display()
+            
+            # Clear input
+            self.new_category_name_var.set("")
+            
+            self.show_status(f"Category '{category_name}' added successfully", "success")
+            messagebox.showinfo("Success", f"Category '{category_name}' has been added")
+            
+        except Exception as e:
+            self.show_status(f"Failed to add category: {str(e)}", "error")
+            messagebox.showerror("Error", f"Failed to add category: {str(e)}")
+    
+    def delete_category(self, category_key):
+        """Delete a category from the tracker."""
+        category_name = self.tracker.categories.get(category_key, category_key)
+        
+        # Check if category is being used by any expenses
+        expenses_using_category = [e for e in self.tracker.expenses.values() 
+                                  if e.get('category') == category_key]
+        
+        if expenses_using_category:
+            messagebox.showerror("Cannot Delete", 
+                f"Cannot delete category '{category_name}' because it is being used by {len(expenses_using_category)} expense(s).\n\n"
+                "Please reassign or delete those expenses first.")
+            return
+        
+        # Confirm deletion
+        result = messagebox.askyesno("Confirm Deletion", 
+            f"Are you sure you want to delete the category '{category_name}'?\n\n"
+            "This action cannot be undone.")
+        
+        if result:
+            try:
+                # Remove from tracker
+                del self.tracker.categories[category_key]
+                
+                # Update category mappings
+                self.update_category_mappings()
+                
+                # Update all dropdowns
+                self.update_category_dropdowns()
+                
+                # Save changes
+                self.tracker.save_data()
+                
+                # Refresh display
+                self.refresh_categories_display()
+                
+                self.show_status(f"Category '{category_name}' deleted successfully", "success")
+                messagebox.showinfo("Success", f"Category '{category_name}' has been deleted")
+                
+            except Exception as e:
+                self.show_status(f"Failed to delete category: {str(e)}", "error")
+                messagebox.showerror("Error", f"Failed to delete category: {str(e)}")
+    
+    def update_category_mappings(self):
+        """Update the category mapping dictionaries."""
+        self.category_display_to_key = {name: key for key, name in self.tracker.categories.items()}
+        self.category_key_to_display = {key: name for key, name in self.tracker.categories.items()}
+    
+    def update_category_dropdowns(self):
+        """Update all category dropdown values after categories change."""
+        try:
+            category_values = list(self.tracker.categories.values())
+            
+            # Update add expense category dropdown
+            if hasattr(self, 'category_var'):
+                current_value = self.category_var.get()
+                # Find the combobox widget and update its values
+                for widget in self.root.winfo_children():
+                    self._update_combobox_values_recursive(widget, "category", category_values)
+                
+                # Reset selection if current value no longer exists
+                if current_value not in category_values and category_values:
+                    self.category_var.set(category_values[0])
+            
+            # Update filter category dropdown
+            if hasattr(self, 'filter_category_var'):
+                current_filter = self.filter_category_var.get()
+                filter_values = ['All'] + category_values
+                for widget in self.root.winfo_children():
+                    self._update_combobox_values_recursive(widget, "filter_category", filter_values)
+                
+                if current_filter not in filter_values:
+                    self.filter_category_var.set('All')
+                    
+        except Exception as e:
+            print(f"Error updating dropdowns: {e}")
+    
+    def _update_combobox_values_recursive(self, widget, combo_type, values):
+        """Recursively find and update combobox values."""
+        try:
+            if isinstance(widget, ttk.Combobox):
+                current_values = list(widget['values'])
+                if combo_type == "category" and len(current_values) > 0 and current_values[0] != 'All':
+                    widget['values'] = values
+                elif combo_type == "filter_category" and len(current_values) > 0 and 'All' in current_values:
+                    widget['values'] = values
+            
+            for child in widget.winfo_children():
+                self._update_combobox_values_recursive(child, combo_type, values)
+        except:
+            pass  # Ignore any widget access errors
     
     def export_data(self):
         """Export expenses to JSON file."""
@@ -859,9 +1295,9 @@ class ExpenseTrackerGUI:
                         'total_amount': self.tracker.get_total_expenses()
                     }, f, indent=2)
                 
-                self.show_status(f"📤 Data exported to {filename}", "success")
+                self.show_status(f"Data exported to {filename}", "success")
             except Exception as e:
-                self.show_status(f"❌ Export failed: {str(e)}", "error")
+                self.show_status(f"Export failed: {str(e)}", "error")
     
     def run(self):
         """Start the GUI application."""
@@ -869,17 +1305,11 @@ class ExpenseTrackerGUI:
 
 def main():
     """Main function to run the GUI application."""
-    print("🚀 Starting Expense Tracker GUI...")
+    print("Starting Expense Tracker GUI...")
     
     try:
         # Try to import optional dependencies
-        global DateEntry, plt, FigureCanvasTkAgg
-        try:
-            from tkcalendar import DateEntry
-        except ImportError:
-            print("Note: tkcalendar not available - using basic date entry")
-            DateEntry = None
-        
+        global plt, FigureCanvasTkAgg
         try:
             import matplotlib.pyplot as plt
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
