@@ -55,9 +55,6 @@ MainWindow::~MainWindow()
 void MainWindow::addExpense(const Expense &exp)
 {
     expenses.emplace_back(exp);
-    // for (int i = 0; i < expenses.size(); ++i) {
-    //     cout << "Price: " <<
-    // }
     updateTable(expenses);
 }
 
@@ -84,10 +81,12 @@ void MainWindow::applyFilters()
 
 void MainWindow::updateTable(const QVector<Expense>& expenses)
 {
-    ui->expenseTable->setRowCount(filteredExpenses.size());
+    filteredExpenses = expenses; // Update the class-level filtered copy
 
-    for (int i = 0; i < filteredExpenses.size(); ++i) {
-        const Expense &e = filteredExpenses[i];
+    ui->expenseTable->setRowCount(expenses.size());
+
+    for (int i = 0; i < expenses.size(); ++i) {
+        const Expense &e = expenses[i];
 
         ui->expenseTable->setItem(i, 0, new QTableWidgetItem(e.date.toString("yyyy-MM-dd")));
         ui->expenseTable->setItem(i, 1, new QTableWidgetItem(QString::number(e.amount, 'f', 2)));
