@@ -1,1 +1,7 @@
 This contains the information about the c++ project
+
+## Compile
+g++ expensetracker.cpp -o expensetracker
+
+## Run
+./expensetracker
