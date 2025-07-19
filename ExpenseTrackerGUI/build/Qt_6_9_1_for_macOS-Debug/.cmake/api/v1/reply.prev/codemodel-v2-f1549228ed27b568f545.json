@@ -1,0 +1,79 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-8f6fb0a237d332503cd8.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ExpenseTrackerGUI",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ExpenseTrackerGUI::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ExpenseTrackerGUI-Debug-8030a03fd1875ca71dc3.json",
+					"name" : "ExpenseTrackerGUI",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ExpenseTrackerGUI_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ExpenseTrackerGUI_autogen-Debug-7fd2e54c6be204f31fe7.json",
+					"name" : "ExpenseTrackerGUI_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ExpenseTrackerGUI_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ExpenseTrackerGUI_autogen_timestamp_deps-Debug-844ef873c781999cc371.json",
+					"name" : "ExpenseTrackerGUI_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug",
+		"source" : "/Users/maheshgaire/ExpenseTrackerGUI"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
