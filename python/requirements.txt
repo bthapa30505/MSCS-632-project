@@ -1,0 +1,15 @@
+# Optional dependencies for enhanced GUI functionality
+# The application will work without these, but they provide better user experience
+
+# For enhanced date picker widgets
+tkcalendar>=1.6.1
+
+# For analytics charts and graphs
+matplotlib>=3.5.0
+
+# All other dependencies are part of Python standard library:
+# - tkinter (built-in GUI library)
+# - json (built-in data serialization)
+# - datetime (built-in date/time handling)
+# - uuid (built-in unique ID generation)
+# - os (built-in operating system interface) 
