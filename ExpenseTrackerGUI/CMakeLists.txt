@@ -29,6 +29,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         expense.h
+        hoverablechartview.h hoverablechartview.cpp
+        chartpopup.h chartpopup.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ExpenseTrackerGUI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

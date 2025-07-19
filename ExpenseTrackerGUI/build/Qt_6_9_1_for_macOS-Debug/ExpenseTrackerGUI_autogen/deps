@@ -110,7 +110,11 @@ ExpenseTrackerGUI_autogen/timestamp: \
 	/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake \
 	/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake \
 	/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/moc_predefs.h \
+	/Users/maheshgaire/ExpenseTrackerGUI/chartpopup.cpp \
+	/Users/maheshgaire/ExpenseTrackerGUI/chartpopup.h \
 	/Users/maheshgaire/ExpenseTrackerGUI/expense.h \
+	/Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.cpp \
+	/Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.h \
 	/Users/maheshgaire/ExpenseTrackerGUI/main.cpp \
 	/Users/maheshgaire/ExpenseTrackerGUI/mainwindow.cpp \
 	/Users/maheshgaire/ExpenseTrackerGUI/mainwindow.h \
@@ -127,6 +131,7 @@ ExpenseTrackerGUI_autogen/timestamp: \
 	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QCandlestickSeries \
 	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QChart \
 	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QChartGlobal \
+	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QChartView \
 	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QLegend \
 	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QLegendMarker \
 	/Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QPieModelMapper \

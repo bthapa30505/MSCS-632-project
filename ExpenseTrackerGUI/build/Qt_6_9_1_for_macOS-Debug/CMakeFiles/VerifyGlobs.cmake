@@ -42,8 +42,12 @@ endif()
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/Users/maheshgaire/ExpenseTrackerGUI/*.cpp")
 set(OLD_GLOB
   "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.cpp"
+  "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/EWIEGA46WW/moc_chartpopup.cpp"
+  "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/EWIEGA46WW/moc_hoverablechartview.cpp"
   "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/EWIEGA46WW/moc_mainwindow.cpp"
   "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/mocs_compilation.cpp"
+  "/Users/maheshgaire/ExpenseTrackerGUI/chartpopup.cpp"
+  "/Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.cpp"
   "/Users/maheshgaire/ExpenseTrackerGUI/main.cpp"
   "/Users/maheshgaire/ExpenseTrackerGUI/mainwindow.cpp"
   )
@@ -66,7 +70,9 @@ file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/Users/maheshgaire/ExpenseTra
 set(OLD_GLOB
   "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/include/ui_mainwindow.h"
   "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/moc_predefs.h"
+  "/Users/maheshgaire/ExpenseTrackerGUI/chartpopup.h"
   "/Users/maheshgaire/ExpenseTrackerGUI/expense.h"
+  "/Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.h"
   "/Users/maheshgaire/ExpenseTrackerGUI/mainwindow.h"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")

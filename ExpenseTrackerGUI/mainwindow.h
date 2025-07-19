@@ -1,6 +1,6 @@
 #include <QVector>
 #include <QtCharts>
-
+#include "hoverablechartview.h"
 
 
 struct Expense;
@@ -20,6 +20,8 @@ public:
     void applyFilters();
     void updateTable(const QVector<Expense>& expenses);
     void updateSummary();
+    void loadSampleExpenses();
+    void warn(const QString &message);
 
 private:
     Ui::MainWindow *ui;
@@ -28,6 +30,6 @@ private:
     QVector<Expense> filteredExpenses;
 
     QChart *chart;
-    QChartView *chartView;
+    HoverableChartView *chartView;
 
 };

@@ -530,9 +530,21 @@
 	"HEADERS" : 
 	[
 		[
+			"/Users/maheshgaire/ExpenseTrackerGUI/chartpopup.h",
+			"MU",
+			"EWIEGA46WW/moc_chartpopup.cpp",
+			null
+		],
+		[
 			"/Users/maheshgaire/ExpenseTrackerGUI/expense.h",
 			"MU",
 			"EWIEGA46WW/moc_expense.cpp",
+			null
+		],
+		[
+			"/Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.h",
+			"MU",
+			"EWIEGA46WW/moc_hoverablechartview.cpp",
 			null
 		],
 		[
@@ -615,6 +627,12 @@
 	"SETTINGS_FILE" : "/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/CMakeFiles/ExpenseTrackerGUI_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[ "/Users/maheshgaire/ExpenseTrackerGUI/chartpopup.cpp", "MU", null ],
+		[
+			"/Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.cpp",
+			"MU",
+			null
+		],
 		[ "/Users/maheshgaire/ExpenseTrackerGUI/main.cpp", "MU", null ],
 		[ "/Users/maheshgaire/ExpenseTrackerGUI/mainwindow.cpp", "MU", null ]
 	],

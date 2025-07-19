@@ -105,6 +105,7 @@
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/stdbool.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/stdint.h \
+  /Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.h \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QAbstractAxis \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QAbstractBarSeries \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QAbstractSeries \
@@ -118,6 +119,7 @@
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QCandlestickSeries \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QChart \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QChartGlobal \
+  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QChartView \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QLegend \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QLegendMarker \
   /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/Headers/QPieModelMapper \

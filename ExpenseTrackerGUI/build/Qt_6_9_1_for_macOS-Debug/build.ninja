@@ -73,6 +73,22 @@ build CMakeFiles/ExpenseTrackerGUI.dir/mainwindow.cpp.o: CXX_COMPILER__ExpenseTr
   OBJECT_DIR = CMakeFiles/ExpenseTrackerGUI.dir
   OBJECT_FILE_DIR = CMakeFiles/ExpenseTrackerGUI.dir
 
+build CMakeFiles/ExpenseTrackerGUI.dir/hoverablechartview.cpp.o: CXX_COMPILER__ExpenseTrackerGUI_unscanned_Debug /Users/maheshgaire/ExpenseTrackerGUI/hoverablechartview.cpp || cmake_object_order_depends_target_ExpenseTrackerGUI
+  DEFINES = -DQT_CHARTS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGLWIDGETS_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles/ExpenseTrackerGUI.dir/hoverablechartview.cpp.o.d
+  FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=15.4 -fcolor-diagnostics
+  INCLUDES = -I/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/include -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCore.framework/Headers -iframework /Users/maheshgaire/Qt/6.9.1/macos/lib -isystem /Users/maheshgaire/Qt/6.9.1/macos/mkspecs/macx-clang -isystem /Users/maheshgaire/Qt/6.9.1/macos/include -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtWidgets.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtGui.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGL.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGLWidgets.framework/Headers
+  OBJECT_DIR = CMakeFiles/ExpenseTrackerGUI.dir
+  OBJECT_FILE_DIR = CMakeFiles/ExpenseTrackerGUI.dir
+
+build CMakeFiles/ExpenseTrackerGUI.dir/chartpopup.cpp.o: CXX_COMPILER__ExpenseTrackerGUI_unscanned_Debug /Users/maheshgaire/ExpenseTrackerGUI/chartpopup.cpp || cmake_object_order_depends_target_ExpenseTrackerGUI
+  DEFINES = -DQT_CHARTS_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGLWIDGETS_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles/ExpenseTrackerGUI.dir/chartpopup.cpp.o.d
+  FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=15.4 -fcolor-diagnostics
+  INCLUDES = -I/Users/maheshgaire/ExpenseTrackerGUI/build/Qt_6_9_1_for_macOS-Debug/ExpenseTrackerGUI_autogen/include -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCore.framework/Headers -iframework /Users/maheshgaire/Qt/6.9.1/macos/lib -isystem /Users/maheshgaire/Qt/6.9.1/macos/mkspecs/macx-clang -isystem /Users/maheshgaire/Qt/6.9.1/macos/include -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtWidgets.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtGui.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGL.framework/Headers -isystem /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGLWidgets.framework/Headers
+  OBJECT_DIR = CMakeFiles/ExpenseTrackerGUI.dir
+  OBJECT_FILE_DIR = CMakeFiles/ExpenseTrackerGUI.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target ExpenseTrackerGUI
@@ -81,7 +97,7 @@ build CMakeFiles/ExpenseTrackerGUI.dir/mainwindow.cpp.o: CXX_COMPILER__ExpenseTr
 #############################################
 # Link the executable ExpenseTrackerGUI.app/Contents/MacOS/ExpenseTrackerGUI
 
-build ExpenseTrackerGUI.app/Contents/MacOS/ExpenseTrackerGUI: CXX_EXECUTABLE_LINKER__ExpenseTrackerGUI_Debug CMakeFiles/ExpenseTrackerGUI.dir/ExpenseTrackerGUI_autogen/mocs_compilation.cpp.o CMakeFiles/ExpenseTrackerGUI.dir/main.cpp.o CMakeFiles/ExpenseTrackerGUI.dir/mainwindow.cpp.o | /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/QtCharts /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGLWidgets.framework/Versions/A/QtOpenGLWidgets /Users/maheshgaire/Qt/6.9.1/macos/lib/QtWidgets.framework/Versions/A/QtWidgets /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGL.framework/Versions/A/QtOpenGL /Users/maheshgaire/Qt/6.9.1/macos/lib/QtGui.framework/Versions/A/QtGui /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCore.framework/Versions/A/QtCore || ExpenseTrackerGUI_autogen ExpenseTrackerGUI_autogen_timestamp_deps
+build ExpenseTrackerGUI.app/Contents/MacOS/ExpenseTrackerGUI: CXX_EXECUTABLE_LINKER__ExpenseTrackerGUI_Debug CMakeFiles/ExpenseTrackerGUI.dir/ExpenseTrackerGUI_autogen/mocs_compilation.cpp.o CMakeFiles/ExpenseTrackerGUI.dir/main.cpp.o CMakeFiles/ExpenseTrackerGUI.dir/mainwindow.cpp.o CMakeFiles/ExpenseTrackerGUI.dir/hoverablechartview.cpp.o CMakeFiles/ExpenseTrackerGUI.dir/chartpopup.cpp.o | /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/QtCharts /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGLWidgets.framework/Versions/A/QtOpenGLWidgets /Users/maheshgaire/Qt/6.9.1/macos/lib/QtWidgets.framework/Versions/A/QtWidgets /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGL.framework/Versions/A/QtOpenGL /Users/maheshgaire/Qt/6.9.1/macos/lib/QtGui.framework/Versions/A/QtGui /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCore.framework/Versions/A/QtCore || ExpenseTrackerGUI_autogen ExpenseTrackerGUI_autogen_timestamp_deps
   FLAGS = -DQT_QML_DEBUG -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=15.4
   LINK_LIBRARIES = -Wl,-rpath,/Users/maheshgaire/Qt/6.9.1/macos/lib  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCharts.framework/Versions/A/QtCharts  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGLWidgets.framework/Versions/A/QtOpenGLWidgets  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtWidgets.framework/Versions/A/QtWidgets  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtOpenGL.framework/Versions/A/QtOpenGL  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtGui.framework/Versions/A/QtGui  -framework AGL  -framework AppKit  -framework OpenGL  -framework ImageIO  -framework Metal  /Users/maheshgaire/Qt/6.9.1/macos/lib/QtCore.framework/Versions/A/QtCore  -framework IOKit  -framework DiskArbitration  -framework UniformTypeIdentifiers
   LINK_PATH = -F/Users/maheshgaire/Qt/6.9.1/macos/lib
