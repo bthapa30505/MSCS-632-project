@@ -39,34 +39,34 @@
     "timestamp": "2025-07-19T00:00:00",
     "created_at": "2025-07-19T11:05:12.873436"
   },
-  "465e2c58": {
-    "id": "465e2c58",
-    "amount": 5010.0,
-    "category": "food",
-    "description": "testtt",
-    "user": "Bishal Thapa loaded",
-    "date": "2025-08-19",
-    "timestamp": "2025-07-19T00:00:00",
-    "created_at": "2025-07-19T10:51:32.222070"
-  },
-  "465e2c60": {
-    "id": "465e2c60",
-    "amount": 5010.0,
-    "category": "food",
-    "description": "testtt",
-    "user": "Bishal Thapa loaded",
-    "date": "2025-07-19",
-    "timestamp": "2025-07-19T00:00:00",
-    "created_at": "2025-07-19T10:51:32.222070"
-  },
   "b1bcd8be": {
     "id": "b1bcd8be",
-    "amount": 333.0,
+    "amount": 334.0,
     "category": "food",
     "description": "testtttt",
     "user": "SandeRestha",
     "date": "2025-07-19",
     "timestamp": "2025-07-19T00:00:00",
     "created_at": "2025-07-19T11:40:14.350878"
+  },
+  "af7fa578": {
+    "id": "af7fa578",
+    "amount": 2000.0,
+    "category": "entertainment",
+    "description": "This is for the entertainment",
+    "user": "Aryan Shrestha",
+    "date": "2025-07-19",
+    "timestamp": "2025-07-19T00:00:00",
+    "created_at": "2025-07-19T14:54:55.560913"
+  },
+  "c7df035b": {
+    "id": "c7df035b",
+    "amount": 1200.0,
+    "category": "food",
+    "description": "This is a test",
+    "user": "Aryan Shrestha",
+    "date": "2025-09-13",
+    "timestamp": "2025-09-13T00:00:00",
+    "created_at": "2025-07-19T15:06:43.905694"
   }
 }
