@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from tkinter.ttk import Notebook, Frame, Label, Entry, Button, Combobox, Treeview
+from tkinter.ttk import Notebook, Frame, Treeview
 from datetime import datetime, timedelta
 import json
 from expense_tracker import ExpenseTracker, format_currency
@@ -230,7 +230,7 @@ class ExpenseTrackerGUI:
         """Initialize the GUI application."""
         self.root = tk.Tk()
         self.root.title("Expense Tracker - Python GUI Demo")
-        self.root.geometry("1200x800")
+        self.root.geometry("1600x1000")
         self.root.configure(bg='#f0f0f0')
         
         # Initialize the expense tracker backend
@@ -265,6 +265,7 @@ class ExpenseTrackerGUI:
         
         # Button styles
         style.configure('Action.TButton', font=('Helvetica', 15, 'bold'))
+        style.configure('Reset.TButton', font=('Helvetica', 15, 'bold'), foreground='#e74c3c')
         style.configure('Primary.TButton', font=('Helvetica', 16, 'bold'))
         
         # Treeview styling
@@ -359,13 +360,13 @@ class ExpenseTrackerGUI:
         
         add_button = ttk.Button(
             button_frame, text="Add Expense", 
-            command=self.add_expense, style='Primary.TButton'
+            command=self.add_expense, style='Action.TButton'
         )
         add_button.pack(side='left', padx=(0, 10))
         
         clear_button = ttk.Button(
             button_frame, text="Clear Form", 
-            command=self.clear_form
+            command=self.clear_form, style='Action.TButton'
         )
         clear_button.pack(side='left')
         
@@ -439,7 +440,7 @@ class ExpenseTrackerGUI:
         
         reset_button = ttk.Button(
             controls_frame, text="Reset", 
-            command=self.reset_filters
+            command=self.reset_filters, style='Reset.TButton'
         )
         reset_button.grid(row=0, column=11, padx=5)
     
@@ -804,7 +805,7 @@ class ExpenseTrackerGUI:
         """Create dialog for editing an expense."""
         dialog = tk.Toplevel(self.root)
         dialog.title("Edit Expense")
-        dialog.geometry("500x450")
+        dialog.geometry("800x600")
         dialog.resizable(False, False)
         dialog.configure(bg='#f0f0f0')
         

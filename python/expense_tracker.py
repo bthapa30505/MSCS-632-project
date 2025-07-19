@@ -613,14 +613,14 @@ def main():
                     print("Expense not found.")
             
             elif choice == '9':
-                print("Thank you for using the Expense Tracker! 👋")
+                print("Thank you for using the Expense Tracker! ")
                 break
             
             else:
                 print("Invalid option. Please select 1-9.")
         
         except KeyboardInterrupt:
-            print("\n\nGoodbye! 👋")
+            print("\n\nGoodbye! ")
             break
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
