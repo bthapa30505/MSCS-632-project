@@ -9,7 +9,7 @@
 // Define a structure to represent an individual expense
 // Using a struct makes all members public by default, which is suitable for a simple data container.
 struct Expense {
-    std::string date;        // Date of the expense (e.g., "YYYY-MM-DD")
+    std::string date;        // Date of the expense (e.g., "MM-DD-YYYY")
     double amount;           // Amount of the expense
     std::string category;    // Category of the expense (e.g., "Food", "Transport")
     std::string description; // Description of the expense
@@ -34,7 +34,7 @@ void addExpense(std::vector<Expense>& expenses) {
     double amount;
 
     std::cout << "\n--- Add New Expense ---" << std::endl;
-    std::cout << "Enter Date (YYYY-MM-DD): ";
+    std::cout << "Enter Date (MM-DD-YYYY): ";
     std::cin >> date;
     std::cout << "Enter Amount: $";
     // Input validation for amount
@@ -72,16 +72,16 @@ void viewAllExpenses(const std::vector<Expense>& expenses) {
 void filterExpensesByDate(const std::vector<Expense>& expenses) {
     std::string startDateStr, endDateStr;
     std::cout << "\n--- Filter Expenses by Date Range ---" << std::endl;
-    std::cout << "Enter Start Date (YYYY-MM-DD): ";
+    std::cout << "Enter Start Date (MM-DD-YYYY): ";
     std::cin >> startDateStr;
-    std::cout << "Enter End Date (YYYY-MM-DD): ";
+    std::cout << "Enter End Date (MM-DD-YYYY): ";
     std::cin >> endDateStr;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear buffer
 
     std::cout << "\nExpenses from " << startDateStr << " to " << endDateStr << ":" << std::endl;
     bool found = false;
     for (const auto& exp : expenses) {
-        // Simple string comparison for dates (assumes YYYY-MM-DD format for correct lexicographical order)
+        // Simple string comparison for dates (assumes MM-DD-YYYY format for correct lexicographical order)
         if (exp.date >= startDateStr && exp.date <= endDateStr) {
             displayExpense(exp);
             found = true;
